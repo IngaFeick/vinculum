@@ -67,9 +67,7 @@ fn make_vinculum_number(divisor: &u32, times: &u64) -> Result<String, String>
         10 => make_vinculum(times, "X", "L", "C"),
         1 => make_vinculum(times, "I", "V", "X"),
         _ => {
-            let mut warning = String::from("Unsupported divisor: ");
-            warning.push_str(&times.to_string());
-            Err(warning)
+            Err(format!("Unsupported divisor: {}", times))
         }
     }
 }
