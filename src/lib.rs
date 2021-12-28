@@ -18,8 +18,8 @@ pub fn arabic2vinculum(input: u64) -> Result<String, String>  {
     let mut result = String::new();
     let mut arabic = input.clone();
 
-    // From 1_000_000 to 10 in steps of powers of ten:
-    for n in (1..=6).rev() {
+    // From 1_000_000_000 to 10 in steps of powers of ten:
+    for n in (1..=9).rev() {
         let divisor = 10_u32.pow(n);
         let divided: u64 = arabic / divisor as u64;
         if divided > 0 {
@@ -55,16 +55,20 @@ pub fn vinculum2arabic<S: AsRef<str>>(input: S) -> Result<u64, String> {
 
 fn make_vinculum_number(divisor: &u32, times: &u64) -> Result<String, String>
 {
+    println!("Divisor: {} times {}", divisor, times);
     match divisor {
-        1000000 => make_vinculum_million(times),
-        100000 => make_vinculum(times, "C̅", "D̅", "CM̅"),
+        1000000000 => make_vinculum_billion(times),
+        100000000 => make_vinculum(times, "C̿", "D̿", "M̿"),
+        10000000 => make_vinculum(times, "X̿", "L̿", "C̿"),
+        1000000 => make_vinculum(times, "M̅", "V̿", "X̿"),
+        100000 => make_vinculum(times, "C̅", "D̅", "M̅"),
         10000 => make_vinculum(times, "X̅", "L̅", "C̅"),
         1000 => make_vinculum(times, "I̅", "V̅", "X̅"),
         100 => make_vinculum(times, "C", "D", "I̅"),
         10 => make_vinculum(times, "X", "L", "C"),
         1 => make_vinculum(times, "I", "V", "X"),
         _ => {
-            let mut warning = String::from("Unsupported number: ");
+            let mut warning = String::from("Unsupported divisor: ");
             warning.push_str(&times.to_string());
             Err(warning)
         }
@@ -76,10 +80,10 @@ This function is separate from the smaller powers of ten because
 it is only partially compliant with the rules for roman numerals.
 The largest supported number is 3.999.999 but we'll allow bigger numbers here.
 */
-fn make_vinculum_million(times: &u64) -> Result<String, String> {
+fn make_vinculum_billion(times: &u64) -> Result<String, String> {
     let mut result = String::new();
-    for n in 0..*times {
-        result.push_str("M̅");
+    for _ in 0..*times {
+        result.push_str("M̿");
     }
     Ok(result)
 }
@@ -226,14 +230,20 @@ mod tests {
     }
 
     #[test]
+    fn test_arabic2vinculum_double_vinculum() {
+        assert_eq!(arabic2vinculum(5000000).unwrap(), "V̿");
+        assert_eq!(arabic2vinculum(10000000).unwrap(), "X̿");
+        assert_eq!(arabic2vinculum(50000000).unwrap(), "L̿");
+        assert_eq!(arabic2vinculum(100000000).unwrap(), "C̿");
+        assert_eq!(arabic2vinculum(500000000).unwrap(), "D̿");
+        assert_eq!(arabic2vinculum(1000000000).unwrap(), "M̿");
+    }
+
+    #[test]
     fn test_arabic2vinculum_irregular_numbers() {
         // for numbers which aren't actually valid roman numbers,
         // not even by vinculum's standards LOL
-        assert_eq!(arabic2vinculum(4000000).unwrap(), "M̅M̅M̅M̅");
-        assert_eq!(arabic2vinculum(5000000).unwrap(), "M̅M̅M̅M̅M̅");
-        assert_eq!(arabic2vinculum(15000000).unwrap(), "M̅M̅M̅M̅M̅M̅M̅M̅M̅M̅M̅M̅M̅M̅M̅");
-        // Largest possible number:
-        // 18446744073709551615
+        assert_eq!(arabic2vinculum(4000000000).unwrap(), "M̿M̿M̿M̿");
     }
 
     // # TODO
