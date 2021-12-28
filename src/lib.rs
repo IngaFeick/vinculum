@@ -1,0 +1,227 @@
+
+pub fn arabic2vinculum(input: u64) -> Result<String, String>  {
+
+    if input == 0 {
+        return Ok(String::new());
+    }
+
+    if input >= 4_000_000 {
+        return Err("Not implemented. Largest supported number is 3.999.999".to_string());
+    }
+
+    let mut result = String::new();
+    let mut arabic = input.clone();
+
+    // From 1_000_000 to 10 in steps of powers of ten:
+    for n in (1..=6).rev() {
+        let divisor = 10_u32.pow(n);
+        let divided: u64 = arabic / divisor as u64;
+        if divided > 0 {
+            let appendix = make_vinculum_number(&divisor, &divided).unwrap();
+            result.push_str(&appendix);
+            arabic -= divisor as u64 * &divided;
+        }
+    }
+    if arabic > 0 {
+        // arabic is a single digit number at this point
+        let rest = make_vinculum_number(&1, &arabic).unwrap();
+        result.push_str(&rest);
+    }
+    Ok(result)
+}
+
+pub fn vinculum2arabic<S: AsRef<str>>(input: S) -> Result<u64, String> {
+    Err("TODO implement".to_string())
+}
+
+
+fn make_vinculum_number(divisor: &u32, times: &u64) -> Result<String, String>
+{
+    match divisor {
+        1000000 => make_vinculum_million(times),
+        100000 => make_vinculum(times, "C̅", "D̅", "CM̅"),
+        10000 => make_vinculum(times, "X̅", "L̅", "C̅"),
+        1000 => make_vinculum(times, "I̅", "V̅", "X̅"),
+        100 => make_vinculum(times, "C", "D", "I̅"),
+        10 => make_vinculum(times, "X", "L", "C"),
+        1 => make_vinculum(times, "I", "V", "X"),
+        _ => {
+            let mut warning = String::from("Unsupported number: ");
+            warning.push_str(&times.to_string());
+            Err(warning)
+        }
+    }
+}
+
+// This function is separate from the smaller powers of ten because
+// it is only partially implemented.
+fn make_vinculum_million(times: &u64) -> Result<String, String> {
+    match times {
+        1 => Ok(String::from("M̅")),
+        2 => Ok(String::from("M̅M̅")),
+        3 => Ok(String::from("M̅M̅M̅")),
+        _ => Err("Not implemented. Largest supported number is 3.999.999".to_string()),
+    }
+}
+
+fn make_vinculum(times: &u64, char1: &str, char5: &str, char10: &str) -> Result<String, String> {
+    match times {
+        1 => Ok(char1.to_string()),
+        2 => {
+            let mut result = String::from(char1.to_string());
+            result.push_str(char1);
+            Ok(result)
+            },
+        3 => {
+            let mut result = String::from(char1.to_string());
+            result.push_str(char1);
+            result.push_str(char1);
+            Ok(result)
+            },
+        4 => {
+            let mut result = String::from(char1.to_string());
+            result.push_str(char5);
+            Ok(result)
+            },
+        5 => Ok(char5.to_string()),
+        6 => { let mut result = String::from(char5.to_string());
+            result.push_str(char1);
+            Ok(result)
+            },
+        7 => { let mut result = String::from(char5.to_string());
+            result.push_str(char1);
+            result.push_str(char1);
+            Ok(result)
+            },
+        8 => { let mut result = String::from(char5.to_string());
+            result.push_str(char1);
+            result.push_str(char1);
+            result.push_str(char1);
+            Ok(result)
+            },
+        9 => { let mut result = String::from(char1.to_string());
+            result.push_str(char10);
+            Ok(result)
+            },
+        _ => {
+            let mut warning = String::from("Unsupported number: ");
+            warning.push_str(&times.to_string());
+            Err(warning)
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn test_arabic2vinculum_single_digit() {
+
+        assert_eq!(arabic2vinculum(0).unwrap(), "");
+        assert_eq!(arabic2vinculum(1).unwrap(), "I");
+        assert_eq!(arabic2vinculum(2).unwrap(), "II");
+        assert_eq!(arabic2vinculum(3).unwrap(), "III");
+        assert_eq!(arabic2vinculum(4).unwrap(), "IV");
+        assert_eq!(arabic2vinculum(5).unwrap(), "V");
+        assert_eq!(arabic2vinculum(6).unwrap(), "VI");
+        assert_eq!(arabic2vinculum(7).unwrap(), "VII");
+        assert_eq!(arabic2vinculum(8).unwrap(), "VIII");
+        assert_eq!(arabic2vinculum(9).unwrap(), "IX");
+
+    }
+
+    #[test]
+    fn test_arabic2vinculum_double_digit() {
+        assert_eq!(arabic2vinculum(10).unwrap(), "X");
+        assert_eq!(arabic2vinculum(11).unwrap(), "XI");
+        assert_eq!(arabic2vinculum(12).unwrap(), "XII");
+        assert_eq!(arabic2vinculum(13).unwrap(), "XIII");
+        assert_eq!(arabic2vinculum(14).unwrap(), "XIV");
+        assert_eq!(arabic2vinculum(15).unwrap(), "XV");
+        assert_eq!(arabic2vinculum(19).unwrap(), "XIX");
+        assert_eq!(arabic2vinculum(20).unwrap(), "XX");
+        assert_eq!(arabic2vinculum(29).unwrap(), "XXIX");
+        assert_eq!(arabic2vinculum(39).unwrap(), "XXXIX");
+        assert_eq!(arabic2vinculum(40).unwrap(), "XL");
+        assert_eq!(arabic2vinculum(50).unwrap(), "L");
+        assert_eq!(arabic2vinculum(60).unwrap(), "LX");
+
+    }
+
+    #[test]
+    fn test_arabic2vinculum_triple_digit() {
+        assert_eq!(arabic2vinculum(100).unwrap(), "C");
+        assert_eq!(arabic2vinculum(160).unwrap(), "CLX");
+        assert_eq!(arabic2vinculum(200).unwrap(), "CC");
+        assert_eq!(arabic2vinculum(246).unwrap(), "CCXLVI");
+        assert_eq!(arabic2vinculum(207).unwrap(), "CCVII");
+        assert_eq!(arabic2vinculum(300).unwrap(), "CCC");
+        assert_eq!(arabic2vinculum(400).unwrap(), "CD");
+        assert_eq!(arabic2vinculum(500).unwrap(), "D");
+        assert_eq!(arabic2vinculum(600).unwrap(), "DC");
+        assert_eq!(arabic2vinculum(800).unwrap(), "DCCC");
+        assert_eq!(arabic2vinculum(900).unwrap(), "CI̅");
+        assert_eq!(arabic2vinculum(789).unwrap(), "DCCLXXXIX");
+    }
+
+    #[test]
+    fn test_arabic2vinculum_quadruple_digit() {
+        // Greyzone between 1k and 4k: numbers from 1k on can be either vinculum or normal (up to 3999)
+
+        // If we want to add a config option to make large numbers classic roman if possible:
+        // assert_eq!(arabic2vinculum(1000), "M");
+        // assert_eq!(arabic2vinculum(1009), "MIX");
+        // assert_eq!(arabic2vinculum(1066), "MLXVI");
+        // assert_eq!(arabic2vinculum(1776), "MDCCLXXVI");
+        // assert_eq!(arabic2vinculum(1918), "MCMXVIII");
+        // assert_eq!(arabic2vinculum(1954), "MCMLIV");
+        // assert_eq!(arabic2vinculum(2014), "MMXIV");
+        // assert_eq!(arabic2vinculum(2421), "MMCDXXI");
+        // // Normal roman numbers end here (3999):
+        // assert_eq!(arabic2vinculum(3999), "MMMCMXCIX");
+
+        // in that case this one here from the function above needs to be changed aswell:
+        // assert_eq!(arabic2vinculum(900), "CI̅");
+        // to:
+        // assert_eq!(arabic2vinculum(900), "CM");
+
+        assert_eq!(arabic2vinculum(1000).unwrap(), "I̅");
+        assert_eq!(arabic2vinculum(1009).unwrap(), "I̅IX");
+        assert_eq!(arabic2vinculum(1066).unwrap(), "I̅LXVI");
+        assert_eq!(arabic2vinculum(1776).unwrap(), "I̅DCCLXXVI");
+        assert_eq!(arabic2vinculum(1918).unwrap(), "I̅CI̅XVIII");
+        assert_eq!(arabic2vinculum(1954).unwrap(), "I̅CI̅LIV");
+        assert_eq!(arabic2vinculum(2014).unwrap(), "I̅I̅XIV");
+        assert_eq!(arabic2vinculum(2421).unwrap(), "I̅I̅CDXXI");
+        assert_eq!(arabic2vinculum(3999).unwrap(), "I̅I̅I̅CI̅XCIX");
+        assert_eq!(arabic2vinculum(4000).unwrap(), "I̅V̅");
+        assert_eq!(arabic2vinculum(4627).unwrap(), "I̅V̅DCXXVII");
+        assert_eq!(arabic2vinculum(5000).unwrap(), "V̅");
+        assert_eq!(arabic2vinculum(5015).unwrap(), "V̅XV");
+        assert_eq!(arabic2vinculum(6000).unwrap(), "V̅I̅");
+    }
+
+    #[test]
+    fn test_arabic2vinculum_quintuple_digit() {
+        assert_eq!(arabic2vinculum(10000).unwrap(), "X̅");
+        assert_eq!(arabic2vinculum(18034).unwrap(), "X̅V̅I̅I̅I̅XXXIV");
+        assert_eq!(arabic2vinculum(20000).unwrap(), "X̅X̅");
+        assert_eq!(arabic2vinculum(25000).unwrap(), "X̅X̅V̅");
+        assert_eq!(arabic2vinculum(25459).unwrap(), "X̅X̅V̅CDLIX");
+        assert_eq!(arabic2vinculum(50000).unwrap(), "L̅");
+    }
+
+    #[test]
+    fn test_arabic2vinculum_chonky_bois() {
+        assert_eq!(arabic2vinculum(100000).unwrap(), "C̅");
+        assert_eq!(arabic2vinculum(500000).unwrap(), "D̅");
+        assert_eq!(arabic2vinculum(500001).unwrap(), "D̅I");
+        assert_eq!(arabic2vinculum(1000000).unwrap(), "M̅");
+        assert_eq!(arabic2vinculum(1000001).unwrap(), "M̅I");
+        assert_eq!(arabic2vinculum(2000000).unwrap(), "M̅M̅");
+        assert_eq!(arabic2vinculum(3000000).unwrap(), "M̅M̅M̅");
+    }
+
+}
