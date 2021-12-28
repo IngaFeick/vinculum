@@ -20,8 +20,8 @@ pub fn arabic2vinculum(input: u64) -> Result<String, String>  {
 
     // From 1_000_000_000 to 10 in steps of powers of ten:
     for n in (1..=9).rev() {
-        let divisor = 10_u32.pow(n);
-        let divided: u64 = arabic / divisor as u64;
+        let divisor: u64 = 10_u64.pow(n);
+        let divided: u64 = arabic / divisor;
         if divided > 0 {
             let appendix = make_vinculum_number(&divisor, &divided).unwrap();
             result.push_str(&appendix);
