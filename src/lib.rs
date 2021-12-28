@@ -56,7 +56,17 @@ pub fn vinculum2arabic<S: AsRef<str>>(input: S) -> Result<u64, String> {
 fn make_vinculum_number(divisor: &u32, times: &u64) -> Result<String, String>
 {
     match divisor {
-        1000000000 => make_vinculum_billion(times),
+        10000000000000000000 => make_vinculum(times, "W", "T", "F"),
+        1000000000000000000 => make_vinculum(times, "W", "T", "F"),
+        100000000000000000 => make_vinculum(times, "W", "T", "F"),
+        10000000000000000 => make_vinculum(times, "W", "T", "F"),
+        1000000000000000 => make_vinculum(times, "W", "T", "F"),
+        100000000000000 => make_vinculum(times, "W", "T", "F"),
+        10000000000000 => make_vinculum(times, "W", "T", "F"),
+        1000000000000 => make_vinculum(times, "W", "T", "F"),
+        100000000000 => make_vinculum(times, "W", "T", "F"),
+        10000000000 => make_vinculum(times, "W", "T", "F"),
+        1000000000 => make_vinculum(times, "W", "T", "F"),
         100000000 => make_vinculum(times, "C̿", "D̿", "M̿"),
         10000000 => make_vinculum(times, "X̿", "L̿", "C̿"),
         1000000 => make_vinculum(times, "M̅", "V̿", "X̿"),
