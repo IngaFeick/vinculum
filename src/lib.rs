@@ -23,14 +23,14 @@ pub fn arabic2vinculum(input: u64) -> Result<String, String>  {
         let divisor: u64 = 10_u64.pow(n);
         let divided: u64 = arabic / divisor;
         if divided > 0 {
-            let appendix = make_vinculum_number(&divisor, &divided).unwrap();
+            let appendix = make_vinculum_number(divisor, &divided).unwrap();
             result.push_str(&appendix);
             arabic -= divisor as u64 * &divided;
         }
     }
     if arabic > 0 {
         // arabic is a single digit number at this point
-        let rest = make_vinculum_number(&1, &arabic).unwrap();
+        let rest = make_vinculum_number(1, &arabic).unwrap();
         result.push_str(&rest);
     }
     Ok(result)
@@ -53,10 +53,10 @@ pub fn vinculum2arabic<S: AsRef<str>>(input: S) -> Result<u64, String> {
 }
 
 
-fn make_vinculum_number(divisor: &u32, times: &u64) -> Result<String, String>
+fn make_vinculum_number(divisor: u64, times: &u64) -> Result<String, String>
 {
     match divisor {
-        1000000000 => make_vinculum_billion(times),
+        1000000000 => Ok(make_vinculum_billion(*times)),
         100000000 => make_vinculum(times, "C̿", "D̿", "M̿"),
         10000000 => make_vinculum(times, "X̿", "L̿", "C̿"),
         1000000 => make_vinculum(times, "M̅", "V̿", "X̿"),
@@ -78,7 +78,7 @@ it is only partially compliant with the rules for roman numerals.
 The largest supported number is 3.999.999 but we'll allow bigger numbers here.
 */
 fn make_vinculum_billion(times: u64) -> String {
-    std::iter::repeat('M̿').take(times).collect()
+    std::iter::repeat("M̿").take(times as usize).collect()
 }
 
 fn make_vinculum(times: &u64, char1: &str, char5: &str, char10: &str) -> Result<String, String> {
