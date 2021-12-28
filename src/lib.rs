@@ -77,12 +77,8 @@ This function is separate from the smaller powers of ten because
 it is only partially compliant with the rules for roman numerals.
 The largest supported number is 3.999.999 but we'll allow bigger numbers here.
 */
-fn make_vinculum_billion(times: &u64) -> Result<String, String> {
-    let mut result = String::new();
-    for _ in 0..*times {
-        result.push_str("M̿");
-    }
-    Ok(result)
+fn make_vinculum_billion(times: u64) -> String {
+    std::iter::repeat('M̿').take(times).collect()
 }
 
 fn make_vinculum(times: &u64, char1: &str, char5: &str, char10: &str) -> Result<String, String> {
