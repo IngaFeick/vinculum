@@ -46,14 +46,14 @@ pub fn arabic2vinculum(input: u64) -> Result<String, String> {
         let divided: u64 = arabic / divisor;
         // println!("{} / {} -> {}", arabic, divisor, divided);
         if divided > 0 {
-            let appendix = make_vinculum_number(n, &divided).unwrap();
+            let appendix = make_vinculum_number(n, divided).unwrap();
             result.push_str(&appendix);
             arabic -= divisor * divided;
         }
     }
     if arabic > 0 {
         // arabic is a single digit number at this point
-        let rest = make_vinculum_number(0, &arabic).unwrap();
+        let rest = make_vinculum_number(0, arabic).unwrap();
         result.push_str(&rest);
     }
     Ok(result)
@@ -75,14 +75,14 @@ pub fn vinculum2arabic<S: AsRef<str>>(input: S) -> Result<u64, String> {
     todo!()
 }
 
-fn make_vinculum_number(power_ten: u32, times: &u64) -> Result<String, String> {
+fn make_vinculum_number(power_ten: u32, times: u64) -> Result<String, String> {
     match CHARACTER_TUPLES.get(&power_ten) {
         Some(t) => make_vinculum(times, *t),
         None => Err(format!("Unsupported size: {}", power_ten)),
     }
 }
 
-fn make_vinculum(times: &u64, chars: (&str, &str, &str)) -> Result<String, String> {
+fn make_vinculum(times: u64, chars: (&str, &str, &str)) -> Result<String, String> {
     // println!("make_vinculum {} -> {:?}", times, chars);
 
     macro_rules! vinc {
