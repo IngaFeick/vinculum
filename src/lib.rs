@@ -8,18 +8,21 @@ static CHARACTER_TUPLES: phf::Map<u32, (&str, &str, &str)> = phf::phf_map! {
     6u32 => ("M̅", "V̿", "X̿"),
     7u32 => ("X̿", "L̿", "C̿"),
     8u32 => ("C̿", "D̿", "M̿"),
-    9u32 => ("M̿", "T", "F"), // TODO add actual numerals from here on
-    10u32 => ("W", "T", "F"),
-    11u32 => ("W", "T", "F"),
-    12u32 => ("W", "T", "F"),
-    13u32 => ("W", "T", "F"),
-    14u32 => ("W", "T", "F"),
-    15u32 => ("W", "T", "F"),
-    16u32 => ("W", "T", "F"),
-    17u32 => ("W", "T", "F"),
-    18u32 => ("W", "T", "F"),
-    19u32 => ("W", "T", "F"),
+    9u32 => ("I̲̿", "V̲̿", "X̲̿"),
+    10u32 => ("X̲̿", "L̲̿", "C̲̿"),
+    11u32 => ("C̲̿", "D̲̿", "M̲̿"),
+    12u32 => ("I̳̿", "V̳̿", "X̳̿"),
+    13u32 => ("X̳̿", "L̳̿", "C̳̿"),
+    14u32 => ("C̳̿", "D̳̿", "M̳̿"),
+    15u32 => ("I⃒̳̿", "V⃒̳̿", "X⃒̳̿"), // TODO the 20D2 codepoint for the single vertical middle strokes
+    16u32 => ("X⃒̳̿", "L⃒̳̿", "C⃒̳̿"), // generates some whitespace to the right of the grapheme
+    17u32 => ("C⃒̳̿", "D⃒̳̿", "M⃒̳̿"), // here as well.
+    18u32 => ("I⃦̳̿", "V⃦̳̿", "X⃦̳̿"),
+    19u32 => ("X⃦̳̿", "L⃦̳̿", "C⃦̳̿"),
+    20u32 => ("C⃦̳̿", "D⃦̳̿", "M⃦̳̿"),
 };
+
+
 
 /// Returns a roman numeral in vinculum syntax for a given arabic number
 ///
