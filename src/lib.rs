@@ -85,20 +85,23 @@ fn make_vinculum_number(power_ten: u32, times: &u64) -> Result<String, String> {
 fn make_vinculum(times: &u64, chars: (&str, &str, &str)) -> Result<String, String> {
     // println!("make_vinculum {} -> {:?}", times, chars);
 
-    match times {
-        // TODO replace this with a macro
-        1 => Ok([chars.0].concat()), // or iter().collect()
-        2 => Ok([chars.0, chars.0].concat()),
-        3 => Ok([chars.0, chars.0, chars.0].concat()),
-        4 => Ok([chars.0, chars.1].concat()),
-        5 => Ok([chars.1].concat()),
-        6 => Ok([chars.1, chars.0].concat()),
-        7 => Ok([chars.1, chars.0, chars.0].concat()),
-        8 => Ok([chars.1, chars.0, chars.0, chars.0].concat()),
-        9 => Ok([chars.0, chars.2].concat()),
-        _ => {
-            Err(format!("Unsupported number: {}", times))
+    macro_rules! vinc {
+        [$($index:tt)*] => {
+            Ok([$(chars.$index),*].concat())
         }
+    }
+
+    match times {
+        1 => vinc![0],
+        2 => vinc![0 0],
+        3 => vinc![0 0 0],
+        4 => vinc![0 1],
+        5 => vinc![1],
+        6 => vinc![1 0],
+        7 => vinc![1 0 0],
+        8 => vinc![1 0 0 0],
+        9 => vinc![0 2],
+        _ => Err(format!("Unsupported number: {}", times)),
     }
 }
 
