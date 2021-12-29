@@ -43,7 +43,9 @@ Normal roman numerals:
 |D | 500 |
 |M | 1000 |
 
-Single vinculum (reaches up to a million):
+Single vinculum `I̅ V̅ X̅ L̅ C̅ D̅ M̅`:
+
+(Depending on the font the vinculums in this table might be misaligned)
 |Numeral|Arabic|Power of ten|
 |-------|------|------------|
 |I̅ | 1000 |10^3|
@@ -55,7 +57,8 @@ Single vinculum (reaches up to a million):
 |M̅ | 1.000.000 |10^6|
 
 
-Double vinculum (up to a billion):
+Double vinculum `I̿ V̿ X̿ L̿ C̿ D̿ M̿ `:
+(Depending on the font the vinculums in this table might be misaligned)
 |Numeral|Arabic|Power of ten|
 |-------|------|------------|
 |I̿ | 1.000.000 |10^6|
