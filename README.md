@@ -66,6 +66,28 @@ Double vinculum (up to a billion):
 |D̿ | 500.000.000 ||
 |M̿ | 1.000.000.000 |10^9|
 
+In lieu of a specification, numbers larger than 10^9 are represented by completely fictional graphemes comprised of combinations of double vinculums with single/double over- and underlines and single/double vertical centered strokes.
+Examples:
+
+```
+Double vinculum with single underline (10^12):
+
+I̲̿ V̲̿ X̲̿ L̲̿ C̲̿ D̲̿ M̲̿
+
+Double vinculum with double underline (10^15):
+
+I̳̿ V̳̿ X̳̿ L̳̿ C̳̿ D̳̿ M̳̿
+
+Double vinculum with double underline and vertical middle bar (10^18):
+
+I⃒̳̿ V⃒̳̿ X⃒̳̿ L⃒̳̿ C⃒̳̿ D⃒̳̿ M⃒̳̿
+
+Double vinculum with double underline and double vertical middle bar (10^21):
+
+I⃦̳̿ V⃦̳̿ X⃦̳̿ L⃦̳̿ C⃦̳̿ D⃦̳̿ M⃦̳̿
+```
+
+PRs with better ideas on how to represent this are very welcome.
 
 ## TODO
 

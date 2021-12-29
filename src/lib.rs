@@ -1,3 +1,29 @@
+static CHARACTER_TUPLES: phf::Map<u32, (&str, &str, &str)> = phf::phf_map! {
+    0u32 => ("I", "V", "X"),
+    1u32 => ("X", "L", "C"),
+    2u32 => ("C", "D", "I̅"),
+    3u32 => ("I̅", "V̅", "X̅"),
+    4u32 => ("X̅", "L̅", "C̅"),
+    5u32 => ("C̅", "D̅", "M̅"),
+    6u32 => ("M̅", "V̿", "X̿"),
+    7u32 => ("X̿", "L̿", "C̿"),
+    8u32 => ("C̿", "D̿", "M̿"),
+    9u32 => ("I̲̿", "V̲̿", "X̲̿"),
+    10u32 => ("X̲̿", "L̲̿", "C̲̿"),
+    11u32 => ("C̲̿", "D̲̿", "M̲̿"),
+    12u32 => ("I̳̿", "V̳̿", "X̳̿"),
+    13u32 => ("X̳̿", "L̳̿", "C̳̿"),
+    14u32 => ("C̳̿", "D̳̿", "M̳̿"),
+    15u32 => ("I⃒̳̿", "V⃒̳̿", "X⃒̳̿"),
+    16u32 => ("X⃒̳̿", "L⃒̳̿", "C⃒̳̿"),
+    17u32 => ("C⃒̳̿", "D⃒̳̿", "M⃒̳̿"),
+    18u32 => ("I⃦̳̿", "V⃦̳̿", "X⃦̳̿"),
+    19u32 => ("X⃦̳̿", "L⃦̳̿", "C⃦̳̿"),
+    20u32 => ("C⃦̳̿", "D⃦̳̿", "M⃦̳̿"),
+};
+
+
+
 /// Returns a roman numeral in vinculum syntax for a given arabic number
 ///
 /// # Arguments
@@ -9,28 +35,27 @@
 /// ```
 /// let result = vinculum::arabic2vinculum(4711);
 /// ```
-pub fn arabic2vinculum(input: u64) -> Result<String, String>  {
-
+pub fn arabic2vinculum(input: u64) -> Result<String, String> {
     if input == 0 {
         return Ok(String::new());
     }
 
     let mut result = String::new();
-    let mut arabic = input.clone();
+    let mut arabic = input;
 
     // From 1_000_000_000 to 10 in steps of powers of ten:
-    for n in (1..=9).rev() {
+    for n in (1..=19).rev() {
         let divisor: u64 = 10_u64.pow(n);
         let divided: u64 = arabic / divisor;
         if divided > 0 {
-            let appendix = make_vinculum_number(divisor, &divided).unwrap();
+            let appendix = make_vinculum_number(n, divided).unwrap();
             result.push_str(&appendix);
-            arabic -= divisor as u64 * &divided;
+            arabic -= divisor * divided;
         }
     }
     if arabic > 0 {
         // arabic is a single digit number at this point
-        let rest = make_vinculum_number(1, &arabic).unwrap();
+        let rest = make_vinculum_number(0, arabic).unwrap();
         result.push_str(&rest);
     }
     Ok(result)
@@ -49,82 +74,32 @@ pub fn arabic2vinculum(input: u64) -> Result<String, String>  {
 /// ```
 pub fn vinculum2arabic<S: AsRef<str>>(input: S) -> Result<u64, String> {
     // input.as_ref()
-    Err("TODO implement".to_string())
+    todo!()
 }
 
+fn make_vinculum_number(power_ten: u32, times: u64) -> Result<String, String> {
+    make_vinculum(times, CHARACTER_TUPLES.get(&power_ten).unwrap())
+}
 
-fn make_vinculum_number(divisor: u64, times: &u64) -> Result<String, String>
-{
-    match divisor {
-        1000000000 => Ok(make_vinculum_billion(*times)),
-        100000000 => make_vinculum(times, "C̿", "D̿", "M̿"),
-        10000000 => make_vinculum(times, "X̿", "L̿", "C̿"),
-        1000000 => make_vinculum(times, "M̅", "V̿", "X̿"),
-        100000 => make_vinculum(times, "C̅", "D̅", "M̅"),
-        10000 => make_vinculum(times, "X̅", "L̅", "C̅"),
-        1000 => make_vinculum(times, "I̅", "V̅", "X̅"),
-        100 => make_vinculum(times, "C", "D", "I̅"),
-        10 => make_vinculum(times, "X", "L", "C"),
-        1 => make_vinculum(times, "I", "V", "X"),
-        _ => {
-            Err(format!("Unsupported divisor: {}", times))
+fn make_vinculum(times: u64, chars: (&str, &str, &str)) -> Result<String, String> {
+
+    macro_rules! vinc {
+        [$($index:tt)*] => {
+            Ok([$(chars.$index),*].concat())
         }
     }
-}
 
-/*
-This function is separate from the smaller powers of ten because
-it is only partially compliant with the rules for roman numerals.
-The largest supported number is 3.999.999 but we'll allow bigger numbers here.
-*/
-fn make_vinculum_billion(times: u64) -> String {
-    std::iter::repeat("M̿").take(times as usize).collect()
-}
-
-fn make_vinculum(times: &u64, char1: &str, char5: &str, char10: &str) -> Result<String, String> {
     match times {
-        1 => Ok(char1.to_string()),
-        2 => {
-            let mut result = String::from(char1.to_string());
-            result.push_str(char1);
-            Ok(result)
-            },
-        3 => {
-            let mut result = String::from(char1.to_string());
-            result.push_str(char1);
-            result.push_str(char1);
-            Ok(result)
-            },
-        4 => {
-            let mut result = String::from(char1.to_string());
-            result.push_str(char5);
-            Ok(result)
-            },
-        5 => Ok(char5.to_string()),
-        6 => { let mut result = String::from(char5.to_string());
-            result.push_str(char1);
-            Ok(result)
-            },
-        7 => { let mut result = String::from(char5.to_string());
-            result.push_str(char1);
-            result.push_str(char1);
-            Ok(result)
-            },
-        8 => { let mut result = String::from(char5.to_string());
-            result.push_str(char1);
-            result.push_str(char1);
-            result.push_str(char1);
-            Ok(result)
-            },
-        9 => { let mut result = String::from(char1.to_string());
-            result.push_str(char10);
-            Ok(result)
-            },
-        _ => {
-            let mut warning = String::from("Unsupported number: ");
-            warning.push_str(&times.to_string());
-            Err(warning)
-        }
+        1 => vinc![0],
+        2 => vinc![0 0],
+        3 => vinc![0 0 0],
+        4 => vinc![0 1],
+        5 => vinc![1],
+        6 => vinc![1 0],
+        7 => vinc![1 0 0],
+        8 => vinc![1 0 0 0],
+        9 => vinc![0 2],
+        _ => Err(format!("Unsupported number: {}", times)),
     }
 }
 
@@ -135,7 +110,6 @@ mod tests {
 
     #[test]
     fn test_arabic2vinculum_single_digit() {
-
         assert_eq!(arabic2vinculum(0).unwrap(), "");
         assert_eq!(arabic2vinculum(1).unwrap(), "I");
         assert_eq!(arabic2vinculum(2).unwrap(), "II");
@@ -146,7 +120,6 @@ mod tests {
         assert_eq!(arabic2vinculum(7).unwrap(), "VII");
         assert_eq!(arabic2vinculum(8).unwrap(), "VIII");
         assert_eq!(arabic2vinculum(9).unwrap(), "IX");
-
     }
 
     #[test]
@@ -164,7 +137,6 @@ mod tests {
         assert_eq!(arabic2vinculum(40).unwrap(), "XL");
         assert_eq!(arabic2vinculum(50).unwrap(), "L");
         assert_eq!(arabic2vinculum(60).unwrap(), "LX");
-
     }
 
     #[test]
@@ -236,7 +208,8 @@ mod tests {
     fn test_arabic2vinculum_irregular_numbers() {
         // for numbers which aren't actually valid roman numbers,
         // not even by vinculum's standards LOL
-        assert_eq!(arabic2vinculum(4000000000).unwrap(), "M̿M̿M̿M̿");
+        // TODO this is not valid anymore when we add new symbols:
+        // assert_eq!(arabic2vinculum(4000000000).unwrap(), "M̿M̿M̿M̿");
     }
 
     // # TODO
@@ -326,5 +299,4 @@ mod tests {
     //     assert_eq!(vinculum2arabic("M̅M̅").unwrap(), 2000000);
     //     assert_eq!(vinculum2arabic("M̅M̅M̅").unwrap(), 3000000);
     // }
-
 }
