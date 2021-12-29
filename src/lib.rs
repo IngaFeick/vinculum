@@ -78,10 +78,7 @@ pub fn vinculum2arabic<S: AsRef<str>>(input: S) -> Result<u64, String> {
 }
 
 fn make_vinculum_number(power_ten: u32, times: u64) -> Result<String, String> {
-    match CHARACTER_TUPLES.get(&power_ten) {
-        Some(t) => make_vinculum(times, *t),
-        None => Err(format!("Unsupported size: {}", power_ten)),
-    }
+    make_vinculum(times, CHARACTER_TUPLES.get(&power_ten).unwrap())
 }
 
 fn make_vinculum(times: u64, chars: (&str, &str, &str)) -> Result<String, String> {
