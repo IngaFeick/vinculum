@@ -120,7 +120,6 @@ pub fn arabic2vinculum(input: u64) -> Result<String, String> {
 /// let result = vinculum::vinculum2arabic("I̅I̅I̅CI̅XCIX");
 /// ```
 pub fn vinculum2arabic<S: AsRef<str>>(input: S) -> Result<u64, String> {
-
     let mut result: u64 = 0;
     let g = input.as_ref().graphemes(true).collect::<Vec<&str>>();
     let mut textiter = g.iter().enumerate().peekable();
@@ -141,7 +140,7 @@ pub fn vinculum2arabic<S: AsRef<str>>(input: S) -> Result<u64, String> {
 }
 
 fn value(grapheme: &str) -> u64 {
-    let powers = *GRAPHEME_VALUES.get(&grapheme).unwrap();
+    let powers = *GRAPHEME_VALUES.get(grapheme).unwrap();
     powers.0 as u64 * 10_u64.pow(powers.1)
 }
 
@@ -150,7 +149,6 @@ fn make_vinculum_number(power_ten: u32, times: u64) -> Result<String, String> {
 }
 
 fn make_vinculum(times: u64, chars: (&str, &str, &str)) -> Result<String, String> {
-
     macro_rules! vinc {
         [$($index:tt)*] => {
             Ok([$(chars.$index),*].concat())
@@ -270,7 +268,7 @@ mod tests {
         assert_eq!(arabic2vinculum(100000000).unwrap(), "C̿");
         assert_eq!(arabic2vinculum(500000000).unwrap(), "D̿");
         // assert_eq!(arabic2vinculum(1000000000).unwrap(), "M̿"); TODO come up with a rule on
-                                // when to use M or the ^I in the class above
+        // when to use M or the ^I in the class above
     }
 
     #[test]
@@ -278,7 +276,10 @@ mod tests {
         // for numbers which aren't actually valid roman numbers,
         // not even by vinculum's standards LOL
         // TODO add test cases for really large numbers
-        assert_eq!(arabic2vinculum(18446744073709551615).unwrap(), "X⃦̳̿V⃦̳̿I⃦̳̿I⃦̳̿I⃦̳̿C⃒̳̿D⃒̳̿X⃒̳̿L⃒̳̿V⃒̳̿I⃒̳̿D̳̿C̳̿C̳̿X̳̿L̳̿I̳̿V̳̿L̲̿X̲̿X̲̿I̲̿I̲̿I̲̿D̿C̿C̿M̅X̿D̅L̅I̅DCXV");
+        assert_eq!(
+            arabic2vinculum(18446744073709551615).unwrap(),
+            "X⃦̳̿V⃦̳̿I⃦̳̿I⃦̳̿I⃦̳̿C⃒̳̿D⃒̳̿X⃒̳̿L⃒̳̿V⃒̳̿I⃒̳̿D̳̿C̳̿C̳̿X̳̿L̳̿I̳̿V̳̿L̲̿X̲̿X̲̿I̲̿I̲̿I̲̿D̿C̿C̿M̅X̿D̅L̅I̅DCXV"
+        );
     }
 
     #[test]
@@ -292,7 +293,6 @@ mod tests {
         assert_eq!(vinculum2arabic("VII").unwrap(), 7);
         assert_eq!(vinculum2arabic("VIII").unwrap(), 8);
         assert_eq!(vinculum2arabic("IX").unwrap(), 9);
-
     }
 
     #[test]
@@ -310,7 +310,6 @@ mod tests {
         assert_eq!(vinculum2arabic("XL").unwrap(), 40);
         assert_eq!(vinculum2arabic("L").unwrap(), 50);
         assert_eq!(vinculum2arabic("LX").unwrap(), 60);
-
     }
 
     #[test]
