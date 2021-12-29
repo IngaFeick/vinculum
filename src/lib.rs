@@ -124,9 +124,9 @@ pub fn vinculum2arabic<S: AsRef<str>>(input: S) -> Result<u64, String> {
     let g = input.as_ref().graphemes(true).collect::<Vec<&str>>();
     let mut textiter = g.iter().enumerate().peekable();
     while let Some((_, &current)) = textiter.next() {
-        let value_current = value(current);
+        let value_current = value(current)?;
         if let Some((_, &next)) = textiter.peek() {
-            let value_next = value(next);
+            let value_next = value(next)?;
             if value_current < value_next {
                 result += value_next - value_current;
                 // Consume the peeked grapheme to keep it from being added twice:
@@ -139,9 +139,12 @@ pub fn vinculum2arabic<S: AsRef<str>>(input: S) -> Result<u64, String> {
     Ok(result)
 }
 
-fn value(grapheme: &str) -> u64 {
-    let powers = *GRAPHEME_VALUES.get(grapheme).unwrap();
-    powers.0 as u64 * 10_u64.pow(powers.1)
+fn value(grapheme: &str) -> Result<u64, String> {
+
+    match GRAPHEME_VALUES.get(grapheme) {
+        Some(powers) => Ok(powers.0 as u64 * 10_u64.pow(powers.1)),
+        None => Err(format!("Unknown grapheme {}", grapheme)),
+    }
 }
 
 fn make_vinculum_number(power_ten: u32, times: u64) -> Result<String, String> {
