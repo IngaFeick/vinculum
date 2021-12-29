@@ -47,7 +47,6 @@ pub fn arabic2vinculum(input: u64) -> Result<String, String> {
     for n in (1..=19).rev() {
         let divisor: u64 = 10_u64.pow(n);
         let divided: u64 = arabic / divisor;
-        // println!("{} / {} -> {}", arabic, divisor, divided);
         if divided > 0 {
             let appendix = make_vinculum_number(n, divided).unwrap();
             result.push_str(&appendix);
@@ -86,7 +85,6 @@ fn make_vinculum_number(power_ten: u32, times: u64) -> Result<String, String> {
 }
 
 fn make_vinculum(times: u64, chars: (&str, &str, &str)) -> Result<String, String> {
-    // println!("make_vinculum {} -> {:?}", times, chars);
 
     macro_rules! vinc {
         [$($index:tt)*] => {
