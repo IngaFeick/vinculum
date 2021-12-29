@@ -95,6 +95,6 @@ The readability of these graphemes strongly depends on the font. `Menlo` for exa
 
 ## TODO
 
-* add support for double vinculums
+* in some fonts the 20D2 code point (single middle vertical stroke) generates some white space to the right of the grapheme. Replace with a better symbol.
 * add support for [fractions](https://en.wikipedia.org/wiki/Roman_numerals#Vinculum)
 
