@@ -78,7 +78,7 @@ pub fn vinculum2arabic<S: AsRef<str>>(input: S) -> Result<u64, String> {
 }
 
 fn make_vinculum_number(power_ten: u32, times: u64) -> Result<String, String> {
-    make_vinculum(times, CHARACTER_TUPLES.get(&power_ten).unwrap())
+    make_vinculum(times, *CHARACTER_TUPLES.get(&power_ten).unwrap())
 }
 
 fn make_vinculum(times: u64, chars: (&str, &str, &str)) -> Result<String, String> {
@@ -208,8 +208,8 @@ mod tests {
     fn test_arabic2vinculum_irregular_numbers() {
         // for numbers which aren't actually valid roman numbers,
         // not even by vinculum's standards LOL
-        // TODO this is not valid anymore when we add new symbols:
-        // assert_eq!(arabic2vinculum(4000000000).unwrap(), "M̿M̿M̿M̿");
+        // TODO add test cases for really large numbers
+        assert_eq!(arabic2vinculum(18446744073709551615).unwrap(), "X⃦̳̿V⃦̳̿I⃦̳̿I⃦̳̿I⃦̳̿C⃒̳̿D⃒̳̿X⃒̳̿L⃒̳̿V⃒̳̿I⃒̳̿D̳̿C̳̿C̳̿X̳̿L̳̿I̳̿V̳̿L̲̿X̲̿X̲̿I̲̿I̲̿I̲̿D̿C̿C̿M̅X̿D̅L̅I̅DCXV");
     }
 
     // # TODO
