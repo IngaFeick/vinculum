@@ -120,23 +120,18 @@ pub fn arabic2vinculum(input: u64) -> Result<String, String> {
 /// let result = vinculum::vinculum2arabic("I̅I̅I̅CI̅XCIX");
 /// ```
 pub fn vinculum2arabic<S: AsRef<str>>(input: S) -> Result<u64, String> {
-    let mut result: u64 = 0;
-    let g = input.as_ref().graphemes(true).collect::<Vec<&str>>();
-    let mut textiter = g.iter().enumerate().peekable();
-    while let Some((_, &current)) = textiter.next() {
-        let value_current = value(current)?;
-        if let Some((_, &next)) = textiter.peek() {
-            let value_next = value(next)?;
-            if value_current < value_next {
-                result += value_next - value_current;
-                // Consume the peeked grapheme to keep it from being added twice:
-                textiter.next();
-                continue;
-            }
+    let values = input.as_ref().graphemes(true).map(value)
+        .collect::<Result<Vec<_>, _>>()?;
+
+    Ok(values.iter().scan(None, |state, &next| {
+        let prev = state.replace(next).unwrap_or(next);
+        if prev < next {
+            // We already added the previous value, so we need to subtract twice.
+            next.checked_sub(prev)?.checked_sub(prev)
+        } else {
+            Some(next)
         }
-        result += value_current;
-    }
-    Ok(result)
+    }).sum())
 }
 
 fn value(grapheme: &str) -> Result<u64, String> {
