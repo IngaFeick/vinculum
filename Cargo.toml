@@ -5,7 +5,6 @@ description = "Convert arabic numbers to and from roman vinculum numerals"
 edition = "2021"
 authors = ["Inga Feick", "aszlig"]
 license = "Apache-2.0"
-license-file = "LICENSE"
 keywords = ["roman", "numeral", "vinculum"]
 
 [dependencies]
