@@ -1,9 +1,12 @@
 [package]
 name = "vinculum"
 version = "0.1.0"
+description = "Convert arabic numbers to and from roman vinculum numerals"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+authors = ["Inga Feick", "aszlig"]
+license = "Apache-2.0"
+license-file = "LICENSE"
+keywords = ["roman", "numeral", "vinculum"]
 
 [dependencies]
 unicode-segmentation = "1.8.0"
