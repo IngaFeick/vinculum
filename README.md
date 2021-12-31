@@ -69,7 +69,7 @@ Double vinculum `I̿ V̿ X̿ L̿ C̿ D̿ M̿ `:
 |D̿ | 500.000.000 ||
 |M̿ | 1.000.000.000 |10^9|
 
-In lieu of a specification, numbers larger than 10^9 are represented by completely fictional graphemes comprised of combinations of double vinculums with single/double over- and underlines and single/double vertical centered strokes. (PRs with better ideas on how to represent this are _very_ welcome)
+In lieu of a specification, numbers larger than 10^9 are represented by completely fictional glyphs comprised of combinations of double vinculums with single/double over- and underlines and single/double vertical centered strokes. (PRs with better ideas on how to represent this are _very_ welcome)
 
 Examples:
 
@@ -90,7 +90,7 @@ Double vinculum with double underline and double vertical middle bar (10^21):
 
 I⃦̳̿ V⃦̳̿ X⃦̳̿ L⃦̳̿ C⃦̳̿ D⃦̳̿ M⃦̳̿
 ```
-The readability of these graphemes strongly depends on the font. `Menlo` for example does a good job of placing the combining characters at the right positions. In other fonts, this tool doubles as an involuntarily Zalgo text generator.
+The readability of these grapheme clusters strongly depends on the font. `Menlo` for example does a good job of placing the combining characters at the right positions. In other fonts, this tool doubles as an involuntarily Zalgo text generator.
 
 
 ## TODO
