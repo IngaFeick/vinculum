@@ -1,3 +1,5 @@
+use unicode_segmentation::UnicodeSegmentation;
+
 static CHARACTER_TUPLES: phf::Map<u32, (&str, &str, &str)> = phf::phf_map! {
     0u32 => ("I", "V", "X"),
     1u32 => ("X", "L", "C"),
@@ -22,7 +24,52 @@ static CHARACTER_TUPLES: phf::Map<u32, (&str, &str, &str)> = phf::phf_map! {
     20u32 => ("C⃦̳̿", "D⃦̳̿", "M⃦̳̿"),
 };
 
+// TODO me no like redundancy, merge this into the other ^ map somehow and get rid of either.
+static GRAPHEME_VALUES: phf::Map<&str, (u32, u32)> = phf::phf_map! {
+    "I" => (1,0),
+    "V" => (5,0),
+    "X" => (1,1),
+    "L" => (5,1),
+    "C" => (1,2),
+    "D" => (5,2),
+    "I̅" => (1,3),
+    "V̅" => (5,3),
+    "X̅" => (1,4),
+    "L̅" => (5,4),
+    "C̅" => (1,5),
+    "D̅" => (5,5),
+    "M̅" => (1,6),
+    "V̿" => (5,6),
+    "X̿" => (1,7),
+    "L̿" => (5,7),
+    "C̿" => (1,8),
+    "D̿" => (5,8),
+    "I̲̿" => (1,9),
+    "V̲̿" => (5,9),
+    "X̲̿" => (1,10),
+    "L̲̿" => (5,10),
+    "C̲̿" => (1,11),
+    "D̲̿" => (5,11),
+    "I̳̿" => (1,12),
+    "V̳̿" => (5,12),
+    "X̳̿" => (1,13),
+    "L̳̿" => (5,13),
+    "C̳̿" => (1,14),
+    "D̳̿" => (5,14),
+    "I⃒̳̿" => (1,15),
+    "V⃒̳̿" => (5,15),
+    "X⃒̳̿" => (1,16),
+    "L⃒̳̿" => (5,16),
+    "C⃒̳̿" => (1,17),
+    "D⃒̳̿" => (5,17),
+    "I⃦̳̿" => (1,18),
+    "V⃦̳̿" => (5,18),
+    "X⃦̳̿" => (1,19),
+    "L⃦̳̿" => (5,19),
+    "C⃦̳̿" => (1,20),
+    "D⃦̳̿" => (5,20),
 
+};
 
 /// Returns a roman numeral in vinculum syntax for a given arabic number
 ///
@@ -73,8 +120,26 @@ pub fn arabic2vinculum(input: u64) -> Result<String, String> {
 /// let result = vinculum::vinculum2arabic("I̅I̅I̅CI̅XCIX");
 /// ```
 pub fn vinculum2arabic<S: AsRef<str>>(input: S) -> Result<u64, String> {
-    // input.as_ref()
-    todo!()
+    let values = input.as_ref().graphemes(true).map(value)
+        .collect::<Result<Vec<_>, _>>()?;
+
+    Ok(values.iter().scan(None, |state, &next| {
+        let prev = state.replace(next).unwrap_or(next);
+        if prev < next {
+            // We already added the previous value, so we need to subtract twice.
+            next.checked_sub(prev)?.checked_sub(prev)
+        } else {
+            Some(next)
+        }
+    }).sum())
+}
+
+fn value(grapheme: &str) -> Result<u64, String> {
+
+    match GRAPHEME_VALUES.get(grapheme) {
+        Some(powers) => Ok(powers.0 as u64 * 10_u64.pow(powers.1)),
+        None => Err(format!("Unknown grapheme {}", grapheme)),
+    }
 }
 
 fn make_vinculum_number(power_ten: u32, times: u64) -> Result<String, String> {
@@ -82,7 +147,6 @@ fn make_vinculum_number(power_ten: u32, times: u64) -> Result<String, String> {
 }
 
 fn make_vinculum(times: u64, chars: (&str, &str, &str)) -> Result<String, String> {
-
     macro_rules! vinc {
         [$($index:tt)*] => {
             Ok([$(chars.$index),*].concat())
@@ -201,7 +265,8 @@ mod tests {
         assert_eq!(arabic2vinculum(50000000).unwrap(), "L̿");
         assert_eq!(arabic2vinculum(100000000).unwrap(), "C̿");
         assert_eq!(arabic2vinculum(500000000).unwrap(), "D̿");
-        assert_eq!(arabic2vinculum(1000000000).unwrap(), "M̿");
+        // assert_eq!(arabic2vinculum(1000000000).unwrap(), "M̿"); TODO come up with a rule on
+        // when to use M or the ^I in the class above
     }
 
     #[test]
@@ -209,94 +274,94 @@ mod tests {
         // for numbers which aren't actually valid roman numbers,
         // not even by vinculum's standards LOL
         // TODO add test cases for really large numbers
-        assert_eq!(arabic2vinculum(18446744073709551615).unwrap(), "X⃦̳̿V⃦̳̿I⃦̳̿I⃦̳̿I⃦̳̿C⃒̳̿D⃒̳̿X⃒̳̿L⃒̳̿V⃒̳̿I⃒̳̿D̳̿C̳̿C̳̿X̳̿L̳̿I̳̿V̳̿L̲̿X̲̿X̲̿I̲̿I̲̿I̲̿D̿C̿C̿M̅X̿D̅L̅I̅DCXV");
+        assert_eq!(
+            arabic2vinculum(18446744073709551615).unwrap(),
+            "X⃦̳̿V⃦̳̿I⃦̳̿I⃦̳̿I⃦̳̿C⃒̳̿D⃒̳̿X⃒̳̿L⃒̳̿V⃒̳̿I⃒̳̿D̳̿C̳̿C̳̿X̳̿L̳̿I̳̿V̳̿L̲̿X̲̿X̲̿I̲̿I̲̿I̲̿D̿C̿C̿M̅X̿D̅L̅I̅DCXV"
+        );
     }
 
-    // # TODO
-    // #[test]
-    // fn test_vinculum2arabic_single_digit() {
-    //     assert_eq!(vinculum2arabic("I").unwrap(), 1);
-    //     assert_eq!(vinculum2arabic("II").unwrap(), 2);
-    //     assert_eq!(vinculum2arabic("III").unwrap(), 3);
-    //     assert_eq!(vinculum2arabic("IV").unwrap(), 4);
-    //     assert_eq!(vinculum2arabic("V").unwrap(), 5);
-    //     assert_eq!(vinculum2arabic("VI").unwrap(), 6);
-    //     assert_eq!(vinculum2arabic("VII").unwrap(), 7);
-    //     assert_eq!(vinculum2arabic("VIII").unwrap(), 8);
-    //     assert_eq!(vinculum2arabic("IX").unwrap(), 9);
+    #[test]
+    fn test_vinculum2arabic_single_digit() {
+        assert_eq!(vinculum2arabic("I").unwrap(), 1);
+        assert_eq!(vinculum2arabic("II").unwrap(), 2);
+        assert_eq!(vinculum2arabic("III").unwrap(), 3);
+        assert_eq!(vinculum2arabic("IV").unwrap(), 4);
+        assert_eq!(vinculum2arabic("V").unwrap(), 5);
+        assert_eq!(vinculum2arabic("VI").unwrap(), 6);
+        assert_eq!(vinculum2arabic("VII").unwrap(), 7);
+        assert_eq!(vinculum2arabic("VIII").unwrap(), 8);
+        assert_eq!(vinculum2arabic("IX").unwrap(), 9);
+    }
 
-    // }
+    #[test]
+    fn test_vinculum2arabic_double_digit() {
+        assert_eq!(vinculum2arabic("X").unwrap(), 10);
+        assert_eq!(vinculum2arabic("XI").unwrap(), 11);
+        assert_eq!(vinculum2arabic("XII").unwrap(), 12);
+        assert_eq!(vinculum2arabic("XIII").unwrap(), 13);
+        assert_eq!(vinculum2arabic("XIV").unwrap(), 14);
+        assert_eq!(vinculum2arabic("XV").unwrap(), 15);
+        assert_eq!(vinculum2arabic("XIX").unwrap(), 19);
+        assert_eq!(vinculum2arabic("XX").unwrap(), 20);
+        assert_eq!(vinculum2arabic("XXIX").unwrap(), 29);
+        assert_eq!(vinculum2arabic("XXXIX").unwrap(), 39);
+        assert_eq!(vinculum2arabic("XL").unwrap(), 40);
+        assert_eq!(vinculum2arabic("L").unwrap(), 50);
+        assert_eq!(vinculum2arabic("LX").unwrap(), 60);
+    }
 
-    // #[test]
-    // fn test_vinculum2arabic_double_digit() {
-    //     assert_eq!(vinculum2arabic("X").unwrap(), 10);
-    //     assert_eq!(vinculum2arabic("XI").unwrap(), 11);
-    //     assert_eq!(vinculum2arabic("XII").unwrap(), 12);
-    //     assert_eq!(vinculum2arabic("XIII").unwrap(), 13);
-    //     assert_eq!(vinculum2arabic("XIV").unwrap(), 14);
-    //     assert_eq!(vinculum2arabic("XV").unwrap(), 15);
-    //     assert_eq!(vinculum2arabic("XIX").unwrap(), 19);
-    //     assert_eq!(vinculum2arabic("XX").unwrap(), 20);
-    //     assert_eq!(vinculum2arabic("XXIX").unwrap(), 29);
-    //     assert_eq!(vinculum2arabic("XXXIX").unwrap(), 39);
-    //     assert_eq!(vinculum2arabic("XL").unwrap(), 40);
-    //     assert_eq!(vinculum2arabic("L").unwrap(), 50);
-    //     assert_eq!(vinculum2arabic("LX").unwrap(), 60);
+    #[test]
+    fn test_vinculum2arabic_triple_digit() {
+        assert_eq!(vinculum2arabic("C").unwrap(), 100);
+        assert_eq!(vinculum2arabic("CLX").unwrap(), 160);
+        assert_eq!(vinculum2arabic("CC").unwrap(), 200);
+        assert_eq!(vinculum2arabic("CCXLVI").unwrap(), 246);
+        assert_eq!(vinculum2arabic("CCVII").unwrap(), 207);
+        assert_eq!(vinculum2arabic("CCC").unwrap(), 300);
+        assert_eq!(vinculum2arabic("CD").unwrap(), 400);
+        assert_eq!(vinculum2arabic("D").unwrap(), 500);
+        assert_eq!(vinculum2arabic("DC").unwrap(), 600);
+        assert_eq!(vinculum2arabic("DCCC").unwrap(), 800);
+        assert_eq!(vinculum2arabic("CI̅").unwrap(), 900);
+        assert_eq!(vinculum2arabic("DCCLXXXIX").unwrap(), 789);
+    }
 
-    // }
+    #[test]
+    fn test_vinculum2arabic_quadruple_digit() {
+        assert_eq!(vinculum2arabic("I̅").unwrap(), 1000);
+        assert_eq!(vinculum2arabic("I̅IX").unwrap(), 1009);
+        assert_eq!(vinculum2arabic("I̅LXVI").unwrap(), 1066);
+        assert_eq!(vinculum2arabic("I̅DCCLXXVI").unwrap(), 1776);
+        assert_eq!(vinculum2arabic("I̅CI̅XVIII").unwrap(), 1918);
+        assert_eq!(vinculum2arabic("I̅CI̅LIV").unwrap(), 1954);
+        assert_eq!(vinculum2arabic("I̅I̅XIV").unwrap(), 2014);
+        assert_eq!(vinculum2arabic("I̅I̅CDXXI").unwrap(), 2421);
+        assert_eq!(vinculum2arabic("I̅I̅I̅CI̅XCIX").unwrap(), 3999);
+        assert_eq!(vinculum2arabic("I̅V̅").unwrap(), 4000);
+        assert_eq!(vinculum2arabic("I̅V̅DCXXVII").unwrap(), 4627);
+        assert_eq!(vinculum2arabic("V̅").unwrap(), 5000);
+        assert_eq!(vinculum2arabic("V̅XV").unwrap(), 5015);
+        assert_eq!(vinculum2arabic("V̅I̅").unwrap(), 6000);
+    }
 
-    // #[test]
-    // fn test_vinculum2arabic_triple_digit() {
-    //     assert_eq!(vinculum2arabic("C").unwrap(), 100);
-    //     assert_eq!(vinculum2arabic("CLX").unwrap(), 160);
-    //     assert_eq!(vinculum2arabic("CC").unwrap(), 200);
-    //     assert_eq!(vinculum2arabic("CCXLVI").unwrap(), 246);
-    //     assert_eq!(vinculum2arabic("CCVII").unwrap(), 207);
-    //     assert_eq!(vinculum2arabic("CCC").unwrap(), 300);
-    //     assert_eq!(vinculum2arabic("CD").unwrap(), 400);
-    //     assert_eq!(vinculum2arabic("D").unwrap(), 500);
-    //     assert_eq!(vinculum2arabic("DC").unwrap(), 600);
-    //     assert_eq!(vinculum2arabic("DCCC").unwrap(), 800);
-    //     assert_eq!(vinculum2arabic("CI̅").unwrap(), 900);
-    //     assert_eq!(vinculum2arabic("DCCLXXXIX").unwrap(), 789);
-    // }
+    #[test]
+    fn test_vinculum2arabic_quintuple_digit() {
+        assert_eq!(vinculum2arabic("X̅").unwrap(), 10000);
+        assert_eq!(vinculum2arabic("X̅V̅I̅I̅I̅XXXIV").unwrap(), 18034);
+        assert_eq!(vinculum2arabic("X̅X̅").unwrap(), 20000);
+        assert_eq!(vinculum2arabic("X̅X̅V̅").unwrap(), 25000);
+        assert_eq!(vinculum2arabic("X̅X̅V̅CDLIX").unwrap(), 25459);
+        assert_eq!(vinculum2arabic("L̅").unwrap(), 50000);
+    }
 
-    // #[test]
-    // fn test_vinculum2arabic_quadruple_digit() {
-    //     assert_eq!(vinculum2arabic("I̅").unwrap(), 1000);
-    //     assert_eq!(vinculum2arabic("I̅IX").unwrap(), 1009);
-    //     assert_eq!(vinculum2arabic("I̅LXVI").unwrap(), 1066);
-    //     assert_eq!(vinculum2arabic("I̅DCCLXXVI").unwrap(), 1776);
-    //     assert_eq!(vinculum2arabic("I̅CI̅XVIII").unwrap(), 1918);
-    //     assert_eq!(vinculum2arabic("I̅CI̅LIV").unwrap(), 1954);
-    //     assert_eq!(vinculum2arabic("I̅I̅XIV").unwrap(), 2014);
-    //     assert_eq!(vinculum2arabic("I̅I̅CDXXI").unwrap(), 2421);
-    //     assert_eq!(vinculum2arabic("I̅I̅I̅CI̅XCIX").unwrap(), 3999);
-    //     assert_eq!(vinculum2arabic("I̅V̅").unwrap(), 4000);
-    //     assert_eq!(vinculum2arabic("I̅V̅DCXXVII").unwrap(), 4627);
-    //     assert_eq!(vinculum2arabic("V̅").unwrap(), 5000);
-    //     assert_eq!(vinculum2arabic("V̅XV").unwrap(), 5015);
-    //     assert_eq!(vinculum2arabic("V̅I̅").unwrap(), 6000);
-    // }
-
-    // #[test]
-    // fn test_vinculum2arabic_quintuple_digit() {
-    //     assert_eq!(vinculum2arabic("X̅").unwrap(), 10000);
-    //     assert_eq!(vinculum2arabic("X̅V̅I̅I̅I̅XXXIV").unwrap(), 18034);
-    //     assert_eq!(vinculum2arabic("X̅X̅").unwrap(), 20000);
-    //     assert_eq!(vinculum2arabic("X̅X̅V̅").unwrap(), 25000);
-    //     assert_eq!(vinculum2arabic("X̅X̅V̅CDLIX").unwrap(), 25459);
-    //     assert_eq!(vinculum2arabic("L̅").unwrap(), 50000);
-    // }
-
-    // #[test]
-    // fn test_vinculum2arabic_chonky_bois() {
-    //     assert_eq!(vinculum2arabic("C̅").unwrap(), 100000);
-    //     assert_eq!(vinculum2arabic("D̅").unwrap(), 500000);
-    //     assert_eq!(vinculum2arabic("D̅I").unwrap(), 500001);
-    //     assert_eq!(vinculum2arabic("M̅").unwrap(), 1000000);
-    //     assert_eq!(vinculum2arabic("M̅I").unwrap(), 1000001);
-    //     assert_eq!(vinculum2arabic("M̅M̅").unwrap(), 2000000);
-    //     assert_eq!(vinculum2arabic("M̅M̅M̅").unwrap(), 3000000);
-    // }
+    #[test]
+    fn test_vinculum2arabic_chonky_bois() {
+        assert_eq!(vinculum2arabic("C̅").unwrap(), 100000);
+        assert_eq!(vinculum2arabic("D̅").unwrap(), 500000);
+        assert_eq!(vinculum2arabic("D̅I").unwrap(), 500001);
+        assert_eq!(vinculum2arabic("M̅").unwrap(), 1000000);
+        assert_eq!(vinculum2arabic("M̅I").unwrap(), 1000001);
+        assert_eq!(vinculum2arabic("M̅M̅").unwrap(), 2000000);
+        assert_eq!(vinculum2arabic("M̅M̅M̅").unwrap(), 3000000);
+    }
 }
