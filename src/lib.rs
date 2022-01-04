@@ -132,11 +132,11 @@ pub fn arabic2vinculum(input: NonZeroU64) -> String {
 /// ```
 /// let result = vinculum::vinculum2arabic("I̅I̅I̅CI̅XCIX");
 /// ```
-pub fn vinculum2arabic<S: AsRef<str>>(input: S) -> Result<u64, String> {
+pub fn vinculum2arabic<S: AsRef<str>>(input: S) -> Result<NonZeroU64, String> {
     let values = input.as_ref().graphemes(true).map(value)
         .collect::<Result<Vec<_>, _>>()?;
 
-    Ok(values.iter().scan(None, |state, &next| {
+    let result = values.iter().scan(None, |state, &next| {
         let prev = state.replace(next).unwrap_or(next);
         if prev < next {
             // We already added the previous value, so we need to subtract twice.
@@ -144,7 +144,11 @@ pub fn vinculum2arabic<S: AsRef<str>>(input: S) -> Result<u64, String> {
         } else {
             Some(next)
         }
-    }).sum())
+    }).sum();
+
+    NonZeroU64::new(result).ok_or_else(|| {
+        format!("Vinculum value results in zero: {}", input.as_ref())
+    })
 }
 
 fn value(grapheme: &str) -> Result<u64, String> {
@@ -187,6 +191,10 @@ mod tests {
 
     fn nz_a2v(num: u64) -> String {
         arabic2vinculum(NonZeroU64::new(num).unwrap())
+    }
+
+    fn nz_v2a(vinculum: &str) -> u64 {
+        vinculum2arabic(vinculum).unwrap().get()
     }
 
     #[test]
@@ -298,86 +306,86 @@ mod tests {
 
     #[test]
     fn test_vinculum2arabic_single_digit() {
-        assert_eq!(vinculum2arabic("I").unwrap(), 1);
-        assert_eq!(vinculum2arabic("II").unwrap(), 2);
-        assert_eq!(vinculum2arabic("III").unwrap(), 3);
-        assert_eq!(vinculum2arabic("IV").unwrap(), 4);
-        assert_eq!(vinculum2arabic("V").unwrap(), 5);
-        assert_eq!(vinculum2arabic("VI").unwrap(), 6);
-        assert_eq!(vinculum2arabic("VII").unwrap(), 7);
-        assert_eq!(vinculum2arabic("VIII").unwrap(), 8);
-        assert_eq!(vinculum2arabic("IX").unwrap(), 9);
+        assert_eq!(nz_v2a("I"), 1);
+        assert_eq!(nz_v2a("II"), 2);
+        assert_eq!(nz_v2a("III"), 3);
+        assert_eq!(nz_v2a("IV"), 4);
+        assert_eq!(nz_v2a("V"), 5);
+        assert_eq!(nz_v2a("VI"), 6);
+        assert_eq!(nz_v2a("VII"), 7);
+        assert_eq!(nz_v2a("VIII"), 8);
+        assert_eq!(nz_v2a("IX"), 9);
     }
 
     #[test]
     fn test_vinculum2arabic_double_digit() {
-        assert_eq!(vinculum2arabic("X").unwrap(), 10);
-        assert_eq!(vinculum2arabic("XI").unwrap(), 11);
-        assert_eq!(vinculum2arabic("XII").unwrap(), 12);
-        assert_eq!(vinculum2arabic("XIII").unwrap(), 13);
-        assert_eq!(vinculum2arabic("XIV").unwrap(), 14);
-        assert_eq!(vinculum2arabic("XV").unwrap(), 15);
-        assert_eq!(vinculum2arabic("XIX").unwrap(), 19);
-        assert_eq!(vinculum2arabic("XX").unwrap(), 20);
-        assert_eq!(vinculum2arabic("XXIX").unwrap(), 29);
-        assert_eq!(vinculum2arabic("XXXIX").unwrap(), 39);
-        assert_eq!(vinculum2arabic("XL").unwrap(), 40);
-        assert_eq!(vinculum2arabic("L").unwrap(), 50);
-        assert_eq!(vinculum2arabic("LX").unwrap(), 60);
+        assert_eq!(nz_v2a("X"), 10);
+        assert_eq!(nz_v2a("XI"), 11);
+        assert_eq!(nz_v2a("XII"), 12);
+        assert_eq!(nz_v2a("XIII"), 13);
+        assert_eq!(nz_v2a("XIV"), 14);
+        assert_eq!(nz_v2a("XV"), 15);
+        assert_eq!(nz_v2a("XIX"), 19);
+        assert_eq!(nz_v2a("XX"), 20);
+        assert_eq!(nz_v2a("XXIX"), 29);
+        assert_eq!(nz_v2a("XXXIX"), 39);
+        assert_eq!(nz_v2a("XL"), 40);
+        assert_eq!(nz_v2a("L"), 50);
+        assert_eq!(nz_v2a("LX"), 60);
     }
 
     #[test]
     fn test_vinculum2arabic_triple_digit() {
-        assert_eq!(vinculum2arabic("C").unwrap(), 100);
-        assert_eq!(vinculum2arabic("CLX").unwrap(), 160);
-        assert_eq!(vinculum2arabic("CC").unwrap(), 200);
-        assert_eq!(vinculum2arabic("CCXLVI").unwrap(), 246);
-        assert_eq!(vinculum2arabic("CCVII").unwrap(), 207);
-        assert_eq!(vinculum2arabic("CCC").unwrap(), 300);
-        assert_eq!(vinculum2arabic("CD").unwrap(), 400);
-        assert_eq!(vinculum2arabic("D").unwrap(), 500);
-        assert_eq!(vinculum2arabic("DC").unwrap(), 600);
-        assert_eq!(vinculum2arabic("DCCC").unwrap(), 800);
-        assert_eq!(vinculum2arabic("CI̅").unwrap(), 900);
-        assert_eq!(vinculum2arabic("DCCLXXXIX").unwrap(), 789);
+        assert_eq!(nz_v2a("C"), 100);
+        assert_eq!(nz_v2a("CLX"), 160);
+        assert_eq!(nz_v2a("CC"), 200);
+        assert_eq!(nz_v2a("CCXLVI"), 246);
+        assert_eq!(nz_v2a("CCVII"), 207);
+        assert_eq!(nz_v2a("CCC"), 300);
+        assert_eq!(nz_v2a("CD"), 400);
+        assert_eq!(nz_v2a("D"), 500);
+        assert_eq!(nz_v2a("DC"), 600);
+        assert_eq!(nz_v2a("DCCC"), 800);
+        assert_eq!(nz_v2a("CI̅"), 900);
+        assert_eq!(nz_v2a("DCCLXXXIX"), 789);
     }
 
     #[test]
     fn test_vinculum2arabic_quadruple_digit() {
-        assert_eq!(vinculum2arabic("I̅").unwrap(), 1000);
-        assert_eq!(vinculum2arabic("I̅IX").unwrap(), 1009);
-        assert_eq!(vinculum2arabic("I̅LXVI").unwrap(), 1066);
-        assert_eq!(vinculum2arabic("I̅DCCLXXVI").unwrap(), 1776);
-        assert_eq!(vinculum2arabic("I̅CI̅XVIII").unwrap(), 1918);
-        assert_eq!(vinculum2arabic("I̅CI̅LIV").unwrap(), 1954);
-        assert_eq!(vinculum2arabic("I̅I̅XIV").unwrap(), 2014);
-        assert_eq!(vinculum2arabic("I̅I̅CDXXI").unwrap(), 2421);
-        assert_eq!(vinculum2arabic("I̅I̅I̅CI̅XCIX").unwrap(), 3999);
-        assert_eq!(vinculum2arabic("I̅V̅").unwrap(), 4000);
-        assert_eq!(vinculum2arabic("I̅V̅DCXXVII").unwrap(), 4627);
-        assert_eq!(vinculum2arabic("V̅").unwrap(), 5000);
-        assert_eq!(vinculum2arabic("V̅XV").unwrap(), 5015);
-        assert_eq!(vinculum2arabic("V̅I̅").unwrap(), 6000);
+        assert_eq!(nz_v2a("I̅"), 1000);
+        assert_eq!(nz_v2a("I̅IX"), 1009);
+        assert_eq!(nz_v2a("I̅LXVI"), 1066);
+        assert_eq!(nz_v2a("I̅DCCLXXVI"), 1776);
+        assert_eq!(nz_v2a("I̅CI̅XVIII"), 1918);
+        assert_eq!(nz_v2a("I̅CI̅LIV"), 1954);
+        assert_eq!(nz_v2a("I̅I̅XIV"), 2014);
+        assert_eq!(nz_v2a("I̅I̅CDXXI"), 2421);
+        assert_eq!(nz_v2a("I̅I̅I̅CI̅XCIX"), 3999);
+        assert_eq!(nz_v2a("I̅V̅"), 4000);
+        assert_eq!(nz_v2a("I̅V̅DCXXVII"), 4627);
+        assert_eq!(nz_v2a("V̅"), 5000);
+        assert_eq!(nz_v2a("V̅XV"), 5015);
+        assert_eq!(nz_v2a("V̅I̅"), 6000);
     }
 
     #[test]
     fn test_vinculum2arabic_quintuple_digit() {
-        assert_eq!(vinculum2arabic("X̅").unwrap(), 10000);
-        assert_eq!(vinculum2arabic("X̅V̅I̅I̅I̅XXXIV").unwrap(), 18034);
-        assert_eq!(vinculum2arabic("X̅X̅").unwrap(), 20000);
-        assert_eq!(vinculum2arabic("X̅X̅V̅").unwrap(), 25000);
-        assert_eq!(vinculum2arabic("X̅X̅V̅CDLIX").unwrap(), 25459);
-        assert_eq!(vinculum2arabic("L̅").unwrap(), 50000);
+        assert_eq!(nz_v2a("X̅"), 10000);
+        assert_eq!(nz_v2a("X̅V̅I̅I̅I̅XXXIV"), 18034);
+        assert_eq!(nz_v2a("X̅X̅"), 20000);
+        assert_eq!(nz_v2a("X̅X̅V̅"), 25000);
+        assert_eq!(nz_v2a("X̅X̅V̅CDLIX"), 25459);
+        assert_eq!(nz_v2a("L̅"), 50000);
     }
 
     #[test]
     fn test_vinculum2arabic_chonky_bois() {
-        assert_eq!(vinculum2arabic("C̅").unwrap(), 100000);
-        assert_eq!(vinculum2arabic("D̅").unwrap(), 500000);
-        assert_eq!(vinculum2arabic("D̅I").unwrap(), 500001);
-        assert_eq!(vinculum2arabic("M̅").unwrap(), 1000000);
-        assert_eq!(vinculum2arabic("M̅I").unwrap(), 1000001);
-        assert_eq!(vinculum2arabic("M̅M̅").unwrap(), 2000000);
-        assert_eq!(vinculum2arabic("M̅M̅M̅").unwrap(), 3000000);
+        assert_eq!(nz_v2a("C̅"), 100000);
+        assert_eq!(nz_v2a("D̅"), 500000);
+        assert_eq!(nz_v2a("D̅I"), 500001);
+        assert_eq!(nz_v2a("M̅"), 1000000);
+        assert_eq!(nz_v2a("M̅I"), 1000001);
+        assert_eq!(nz_v2a("M̅M̅"), 2000000);
+        assert_eq!(nz_v2a("M̅M̅M̅"), 3000000);
     }
 }
