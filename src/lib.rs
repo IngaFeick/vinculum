@@ -1,5 +1,6 @@
 use unicode_segmentation::UnicodeSegmentation;
 
+
 static CHARACTER_TUPLES: phf::Map<u32, (&str, &str, &str)> = phf::phf_map! {
     0u32 => ("I", "V", "X"),
     1u32 => ("X", "L", "C"),
@@ -25,51 +26,66 @@ static CHARACTER_TUPLES: phf::Map<u32, (&str, &str, &str)> = phf::phf_map! {
 };
 
 // TODO me no like redundancy, merge this into the other ^ map somehow and get rid of either.
-static GRAPHEME_VALUES: phf::Map<&str, (u32, u32)> = phf::phf_map! {
-    "I" => (1,0),
-    "V" => (5,0),
-    "X" => (1,1),
-    "L" => (5,1),
-    "C" => (1,2),
-    "D" => (5,2),
-    "I̅" => (1,3),
-    "V̅" => (5,3),
-    "X̅" => (1,4),
-    "L̅" => (5,4),
-    "C̅" => (1,5),
-    "D̅" => (5,5),
-    "M̅" => (1,6),
-    "V̿" => (5,6),
-    "X̿" => (1,7),
-    "L̿" => (5,7),
-    "C̿" => (1,8),
-    "D̿" => (5,8),
-    "I̲̿" => (1,9),
-    "V̲̿" => (5,9),
-    "X̲̿" => (1,10),
-    "L̲̿" => (5,10),
-    "C̲̿" => (1,11),
-    "D̲̿" => (5,11),
-    "I̳̿" => (1,12),
-    "V̳̿" => (5,12),
-    "X̳̿" => (1,13),
-    "L̳̿" => (5,13),
-    "C̳̿" => (1,14),
-    "D̳̿" => (5,14),
-    "I⃒̳̿" => (1,15),
-    "V⃒̳̿" => (5,15),
-    "X⃒̳̿" => (1,16),
-    "L⃒̳̿" => (5,16),
-    "C⃒̳̿" => (1,17),
-    "D⃒̳̿" => (5,17),
-    "I⃦̳̿" => (1,18),
-    "V⃦̳̿" => (5,18),
-    "X⃦̳̿" => (1,19),
-    "L⃦̳̿" => (5,19),
-    "C⃦̳̿" => (1,20),
-    "D⃦̳̿" => (5,20),
-
+static GLYPH2INT: phf::Map<&str, u64> = phf::phf_map! {
+    // normal numerals
+    "I" => 1, // 1 * 10_u64.pow(0)
+    "V" => 5, // 5 * 10_u64.pow(0)
+    "X" => 10, // 1 * 10_u64.pow(1)
+    "L" => 50, // 5 * 10_u64.pow(1)
+    "C" => 100, // 1 * 10_u64.pow(2)
+    "D" => 500, // 5 * 10_u64.pow(2)
+    "M" => 1000, // 1 * 10_u64.pow(3)
+    // simple vinculum
+    "I̅" => 1000, // 1 * 10_u64.pow(3)
+    "V̅" => 5000, // 5 * 10_u64.pow(3)
+    "X̅" => 10000, // 1 * 10_u64.pow(4)
+    "L̅" => 50000, // 5 * 10_u64.pow(4)
+    "C̅" => 100000, // 1 * 10_u64.pow(5)
+    "D̅" => 500000, // 5 * 10_u64.pow(5)
+    "M̅" => 1000000, // 1 * 10_u64.pow(6)
+    // double vinculum
+    "I̿" => 1000000, // 1 * 10_u64.pow(6)
+    "V̿" => 5000000, // 5 * 10_u64.pow(6)
+    "X̿" => 10000000, // 1 * 10_u64.pow(7)
+    "L̿" => 50000000, // 5 * 10_u64.pow(7)
+    "C̿" => 100000000, // 1 * 10_u64.pow(8)
+    "D̿" => 500000000, // 5 * 10_u64.pow(8)
+    "M̿" => 1000000000, // 1 * 10_u64.pow(9)
+    // Double vinculum with single underline
+    "I̲̿" => 1000000000, // 1 * 10_u64.pow(9)
+    "V̲̿" => 5000000000, // 5 * 10_u64.pow(9)
+    "X̲̿" => 10000000000, // 1 * 10_u64.pow(10)
+    "L̲̿" => 50000000000, // 5 * 10_u64.pow(10)
+    "C̲̿" => 100000000000, // 1 * 10_u64.pow(11)
+    "D̲̿" => 500000000000, // 5 * 10_u64.pow(11)
+    "M̲̿" => 1000000000000, // 1 * 10_u64.pow(12)
+    // Double vinculum with double underline
+    "I̳̿" => 1000000000000, // 1 * 10_u64.pow(12)
+    "V̳̿" => 5000000000000, // 5 * 10_u64.pow(12)
+    "X̳̿" => 10000000000000, // 1 * 10_u64.pow(13)
+    "L̳̿" => 50000000000000, // 5 * 10_u64.pow(13)
+    "C̳̿" => 100000000000000, // 1 * 10_u64.pow(14)
+    "D̳̿" => 500000000000000, // 5 * 10_u64.pow(14)
+    "M̳̿"  => 1000000000000000, // 1 * 10_u64.pow(15)
+    // Double vinculum with double underline and vertical middle bar
+    "I⃒̳̿"  => 1000000000000000, // 1 * 10_u64.pow(15)
+    "V⃒̳̿" => 5000000000000000, // 5 * 10_u64.pow(15)
+    "X⃒̳̿" => 10000000000000000, // 1 * 10_u64.pow(16)
+    "L⃒̳̿" => 50000000000000000, // 5 * 10_u64.pow(16)
+    "C⃒̳̿" => 100000000000000000, // 1 * 10_u64.pow(17)
+    "D⃒̳̿" => 500000000000000000, // 5 * 10_u64.pow(17)
+    "M⃒̳̿"  => 1000000000000000000, // 1 * 10_u64.pow(18)
+    // Double vinculum with double underline and double vertical middle bar
+    "I⃦̳̿"  => 1000000000000000000, // 1 * 10_u64.pow(18)
+    "V⃦̳̿" => 5000000000000000000, // 5 * 10_u64.pow(18)
+    "X⃦̳̿" => 10000000000000000000, // 1 * 10_u64.pow(19)
+    "L⃦̳̿" => 50000000000000000000, // 5 * 10_u64.pow(19)
+    "C⃦̳̿" => 100000000000000000000, // 1 * 10_u64.pow(20)
+    "D⃦̳̿" => 500000000000000000000, // 5 * 10_u64.pow(20)
+    "M⃦̳̿" => 1000000000000000000000, // 5 * 10_u64.pow(21)
 };
+
+
 
 /// Returns a roman numeral in vinculum syntax for a given arabic number
 ///
@@ -136,8 +152,8 @@ pub fn vinculum2arabic<S: AsRef<str>>(input: S) -> Result<u64, String> {
 
 fn value(grapheme: &str) -> Result<u64, String> {
 
-    match GRAPHEME_VALUES.get(grapheme) {
-        Some(powers) => Ok(powers.0 as u64 * 10_u64.pow(powers.1)),
+    match GLYPH2INT.get(grapheme) {
+        Some(value) => Ok(*value),
         None => Err(format!("Unknown grapheme {}", grapheme)),
     }
 }
