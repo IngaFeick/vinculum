@@ -186,8 +186,8 @@ fn make_vinculum(times: u64, chars: (&str, &str, &str)) -> Result<String, String
 
 #[cfg(test)]
 mod tests {
-
     use super::*;
+    use proptest::prelude::*;
 
     fn nz_a2v(num: u64) -> String {
         arabic2vinculum(NonZeroU64::new(num).unwrap())
@@ -387,5 +387,67 @@ mod tests {
         assert_eq!(nz_v2a("M̅I"), 1000001);
         assert_eq!(nz_v2a("M̅M̅"), 2000000);
         assert_eq!(nz_v2a("M̅M̅M̅"), 3000000);
+    }
+
+    prop_compose! {
+        fn nzu64()(arabic in 1..u64::MAX) -> NonZeroU64 {
+            NonZeroU64::new(arabic).unwrap()
+        }
+    }
+
+    proptest! {
+        #[test]
+        fn encode_decode_symmetry(arabic in nzu64()) {
+            let vinculum = arabic2vinculum(arabic);
+            prop_assert_eq!(arabic, vinculum2arabic(vinculum).unwrap());
+        }
+
+        #[test]
+        fn subtractive_notation_implies_max_three_repeats(arabic in nzu64()) {
+            let vinculum = arabic2vinculum(arabic);
+            let graphemes = vinculum.graphemes(true).collect::<Vec<_>>();
+
+            let mut longest = 1;
+            let mut count = 1;
+
+            let mut iter = graphemes.windows(2);
+            while let Some([prev, next]) = iter.next() {
+                if prev == next {
+                    count += 1;
+                    if count > longest {
+                        longest = count;
+                    }
+                } else {
+                    count = 1;
+                }
+            }
+
+            prop_assert!(
+                longest <= 3,
+                "{} glyphs > 3: {:?}", longest, vinculum
+            );
+        }
+
+        #[test]
+        fn glyph_count_smaller_than_value(arabic in nzu64()) {
+            let vinculum = arabic2vinculum(arabic);
+            let glyph_count = vinculum.graphemes(true).count();
+            prop_assert!(glyph_count < arabic.get() as usize);
+        }
+
+        #[test]
+        fn parse_failure(
+            arabic in nzu64(),
+            (before, after) in prop_oneof![(".+", ".*"), (".*", ".+")],
+        ) {
+            let vinculum = arabic2vinculum(arabic);
+            let garbage = before + &vinculum + &after;
+            let result = vinculum2arabic(garbage).ok();
+            if let Some(value) = result {
+                prop_assert_ne!(arabic, value);
+            } else {
+                prop_assert_eq!(result, None);
+            }
+        }
     }
 }
