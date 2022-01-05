@@ -10,3 +10,6 @@ keywords = ["roman", "numeral", "vinculum"]
 [dependencies]
 unicode-segmentation = "1.8.0"
 phf = { version = "0.10", features = ["macros"] }
+
+[dev-dependencies]
+proptest = "1.0.0"
