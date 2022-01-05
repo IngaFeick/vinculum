@@ -97,7 +97,9 @@ static GLYPH2INT: phf::Map<&str, u64> = phf::phf_map! {
 /// # Examples
 ///
 /// ```
-/// let result = vinculum::arabic2vinculum(4711);
+/// let input = std::num::NonZeroU64::new(4711).unwrap();
+/// let result = vinculum::arabic2vinculum(input);
+/// assert_eq!(result, "I̅V̅DCCXI");
 /// ```
 pub fn arabic2vinculum(input: NonZeroU64) -> String {
     let mut result = String::new();
