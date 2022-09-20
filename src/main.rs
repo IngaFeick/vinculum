@@ -3,8 +3,8 @@ fn main() {
         .nth(1)
         .expect("Please provide an arabic number or a roman numeral.");
     if arg.chars().all(char::is_numeric) {
-        let arabic = arg.parse::<u64>().unwrap();
-        let result = vinculum::arabic2vinculum(arabic).unwrap();
+        let arabic = arg.parse::<std::num::NonZeroU64>().unwrap();
+        let result = vinculum::arabic2vinculum(arabic);
         println!("{}", result);
     } else {
         let result = vinculum::vinculum2arabic(&arg);
